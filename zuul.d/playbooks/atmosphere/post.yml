@@ -4,6 +4,15 @@
 - name: Verify Ceph OSD exporter chart
   hosts: all
   tasks:
+    - name: Fetch daemonset
+      become: true
+      ansible.builtin.command:
+        kubectl -n monitoring describe daemonset ceph-osd-exporter
+      register: daemonset_detail
+      until: daemonset_detail.rc == 0
+      retries: 10
+      delay: 3
+
     - name: Wait for pods become ready
       become: true
       ansible.builtin.command:
@@ -14,4 +23,4 @@
       retries: 30
       delay: 3
       register: result
-      until: result.rc == 0 or 'no matching resources found' not in result.stderr
+      until: result.rc == 0 or "'no matching resources found' not in result.stderr"
