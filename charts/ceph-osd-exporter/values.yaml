@@ -18,6 +18,7 @@ rbac:
   clusterscoped: true
 
 service:
+  type: clusterIP
   port: 9282
   annotations: {}
   labels: {}

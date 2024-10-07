@@ -1,0 +1,13 @@
+# Copyright (c) 2024 VEXXHOST, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+- name: Verify Ceph OSD exporter chart
+  hosts: all
+  tasks:
+    - name: Wait for pods become ready
+      become: true
+      ansible.builtin.command:
+        kubectl wait --namespace=monitoring \
+        --for=condition=Ready pods \
+        --selector app.kubernetes.io/name=ceph-osd-exporter \
+        --timeout=600s

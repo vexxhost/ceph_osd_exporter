@@ -1,0 +1,20 @@
+# Copyright (c) 2024 VEXXHOST, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+- project:
+    merge-mode: squash-merge
+    check:
+      jobs:
+        - atmosphere-molecule-ceph-osd-exporter:
+            dependencies: &molecule_check_dependencies
+              - name: ceph-osd-exporter-build-container-image
+                soft: true
+    gate:
+      jobs:
+        - atmosphere-molecule-ceph-osd-exporter:
+            dependencies: &molecule_gate_dependencies
+              - name: ceph-osd-exporter-upload-container-image
+                soft: true
+    promote:
+      jobs:
+        - ceph-osd-exporter-promote-container-image

@@ -1,0 +1,42 @@
+# Copyright (c) 2024 VEXXHOST, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+- name: Fetch Atmosphere
+  hosts: all
+  tasks:
+    - name: Git clone Atmosphere
+      become: true
+      ansible.builtin.git:
+        repo: 'https://github.com/vexxhost/atmosphere.git'
+        dest: /tmp/atmosphere
+        version: "{{ lookup('ansible.builtin.env', 'atmosphere_release', default='main') }}"
+    - name: Run Tox to build Atmosphere Environment
+      become: true
+      ansible.builtin.command:
+        tox -e molecule-venv -- converge -s csi
+      args:
+        chdir: /tmp/atmosphere
+
+    # We can drop this part `ceph-osd-exporter=enabled` exists in all testing branches.
+    - name: Add lable to `instance` node
+      become: true
+      ansible.builtin.command:
+        kubectl label nodes instance ceph-osd-exporter=enabled
+
+        #- name: Install ceph-osd-exporter Helm chart
+        #become: true
+        #ansible.builtin.command:
+        #helm -n monitoring install ceph-osd-exporter ./charts/ceph-osd-exporter
+        #args:
+        #chdir: "{{ zuul.project.src_dir }}"
+
+    - name: Deploy Helm chart
+      become: true
+      run_once: true
+      kubernetes.core.helm:
+        name: ceph-osd-exporter
+        chart_ref: "{{ zuul.project.src_dir }}/charts/ceph-osd-exporter"
+        release_namespace: monitoring
+        create_namespace: true
+        kubeconfig: "{{ kubeconfig_path | default('/etc/kubernetes/admin.conf') }}"
+        values: {}
