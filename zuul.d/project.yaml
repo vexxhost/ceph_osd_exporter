@@ -5,16 +5,12 @@
     merge-mode: squash-merge
     check:
       jobs:
-        - atmosphere-molecule-ceph-osd-exporter:
-            dependencies: &molecule_check_dependencies
-              - name: ceph-osd-exporter-build-container-image
-                soft: true
+        - atmosphere-molecule-ceph-osd-exporter
+        - ceph-osd-exporter-build-container-image
     gate:
       jobs:
-        - atmosphere-molecule-ceph-osd-exporter:
-            dependencies: &molecule_gate_dependencies
-              - name: ceph-osd-exporter-upload-container-image
-                soft: true
+        - atmosphere-molecule-ceph-osd-exporter
+        - ceph-osd-exporter-upload-container-image
     promote:
       jobs:
         - ceph-osd-exporter-promote-container-image
