@@ -1,6 +1,3 @@
-# Copyright (c) 2024 VEXXHOST, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 - job:
     name: ceph-osd-exporter-build-container-image
     parent: ci-build-container-image
@@ -26,14 +23,14 @@
     parent: ci-promote-container-image
     vars: *container_image_vars
 
-- project:
-    merge-mode: squash-merge
-    check:
-      jobs:
-        - ceph-osd-exporter-build-container-image
-    gate:
-      jobs:
-        - ceph-osd-exporter-upload-container-image
-    promote:
-      jobs:
-        - ceph-osd-exporter-promote-container-image
+- job:
+    name: atmosphere-molecule-ceph-osd-exporter
+    parent: tox
+    timeout: 7200
+    nodeset:
+      nodes:
+        - name: ubuntu-jammy
+          label: jammy-16c-64g
+    pre-run: zuul.d/playbooks/atmosphere/pre.yml
+    run: zuul.d/playbooks/atmosphere/run.yml
+    post-run: zuul.d/playbooks/atmosphere/post.yml
