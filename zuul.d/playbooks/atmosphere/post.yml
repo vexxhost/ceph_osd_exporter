@@ -11,3 +11,7 @@
         --for=condition=Ready pods \
         --selector app.kubernetes.io/name=ceph-osd-exporter \
         --timeout=600s
+      retries: 30
+      delay: 3
+      register: result
+      until: result.rc == 0 or 'no matching resources found' not in result.stderr
