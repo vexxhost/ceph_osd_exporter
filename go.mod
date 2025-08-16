@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/common v0.48.0
 	github.com/prometheus/exporter-toolkit v0.11.0
 	github.com/spf13/afero v1.14.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
