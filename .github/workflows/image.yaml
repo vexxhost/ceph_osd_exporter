@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     steps:
       - uses: depot/setup-action@v1
       - uses: docker/metadata-action@v5
