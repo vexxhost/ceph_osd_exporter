@@ -1,0 +1,26 @@
+name: image
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: depot/setup-action@v1
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/vexxhost/ceph-osd-exporter
+      - uses: depot/build-push-action@v1
+        with:
+          project: 783c0k5djt
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
