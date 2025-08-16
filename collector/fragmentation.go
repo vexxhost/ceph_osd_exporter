@@ -4,22 +4,21 @@
 package collector
 
 import (
+	"log/slog"
 	"sync"
 
-	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/afero"
 	"github.com/vexxhost/ceph_osd_exporter/internal/ceph"
 )
 
 type FragmentationCollector struct {
-	logger log.Logger
+	logger *slog.Logger
 
 	rating *prometheus.Desc
 }
 
-func NewFragmentationCollector(logger log.Logger) prometheus.Collector {
+func NewFragmentationCollector(logger *slog.Logger) prometheus.Collector {
 	return &FragmentationCollector{
 		logger: logger,
 
@@ -41,7 +40,7 @@ func (c *FragmentationCollector) Collect(ch chan<- prometheus.Metric) {
 
 	sockets, err := ceph.GetAllAdminSockets(filesystem)
 	if err != nil {
-		level.Error(c.logger).Log("msg", "failed to get admin sockets", "err", err)
+		c.logger.Error("failed to get admin sockets", "err", err)
 		return
 	}
 
@@ -52,13 +51,13 @@ func (c *FragmentationCollector) Collect(ch chan<- prometheus.Metric) {
 				Prefix: "bluestore allocator score block",
 			})
 			if err != nil {
-				level.Error(c.logger).Log("msg", "failed to get osd fragmentation status", "err", err)
+				c.logger.Error("failed to get osd fragmentation status", "osd", socket.Osd(), "err", err)
 				return
 			}
 
 			rating, ok := response["fragmentation_rating"].(float64)
 			if !ok {
-				level.Error(c.logger).Log("msg", "failed to parse fragmentation rating", "response", response)
+				c.logger.Error("failed to parse fragmentation rating", "osd", socket.Osd(), "response", response)
 				return
 			}
 
