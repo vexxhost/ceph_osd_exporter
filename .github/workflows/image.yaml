@@ -25,7 +25,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: depot/build-push-action@9785b135c3c76c33db102e45be96a25ab55cd507 # v1
+      - uses: depot/build-push-action@9785b135c3c76c33db102e45be96a25ab55cd507 # v1.16.2
         with:
           project: 783c0k5djt
           push: ${{ github.event_name != 'pull_request' }}
