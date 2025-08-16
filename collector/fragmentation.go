@@ -4,6 +4,8 @@
 package collector
 
 import (
+	"sync"
+
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,21 +45,26 @@ func (c *FragmentationCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
+	var wg sync.WaitGroup
 	for _, socket := range sockets {
-		response, err := socket.SendCommand(ceph.AdminSocketCommand{
-			Prefix: "bluestore allocator score block",
+		wg.Go(func() {
+			response, err := socket.SendCommand(ceph.AdminSocketCommand{
+				Prefix: "bluestore allocator score block",
+			})
+			if err != nil {
+				level.Error(c.logger).Log("msg", "failed to get osd fragmentation status", "err", err)
+				return
+			}
+
+			rating, ok := response["fragmentation_rating"].(float64)
+			if !ok {
+				level.Error(c.logger).Log("msg", "failed to parse fragmentation rating", "response", response)
+				return
+			}
+
+			ch <- prometheus.MustNewConstMetric(c.rating, prometheus.GaugeValue, rating, socket.Osd())
 		})
-		if err != nil {
-			level.Error(c.logger).Log("msg", "failed to get osd fragmentation status", "err", err)
-			continue
-		}
-
-		rating, ok := response["fragmentation_rating"].(float64)
-		if !ok {
-			level.Error(c.logger).Log("msg", "failed to parse fragmentation rating", "response", response)
-			continue
-		}
-
-		ch <- prometheus.MustNewConstMetric(c.rating, prometheus.GaugeValue, rating, socket.Osd())
 	}
+
+	wg.Wait()
 }
